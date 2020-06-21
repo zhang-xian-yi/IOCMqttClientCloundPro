@@ -7,6 +7,9 @@
 QT       += core gui network
 QT       += charts
 QT       += sql
+QT       += widgets
+
+
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -31,16 +34,16 @@ include(src/databases/mysql.pri)
 include(src/ui/ui.pri)
 include(src/module/module.pri)
 
+
 INCLUDEPATH  += $$PWD/src/mainwight
 INCLUDEPATH  += $$PWD/src/databases
 INCLUDEPATH  += $$PWD/src/ui/line_chart
 INCLUDEPATH  += $$PWD/src/ui/user_info
+INCLUDEPATH  += $$PWD/src/ui/led_control
 INCLUDEPATH  += $$PWD/src/module/bean
 INCLUDEPATH  += $$PWD/src/module/json
 INCLUDEPATH  += $$PWD/src/module/deal_msg
 INCLUDEPATH  += $$PWD/src/module/qtmqtt
-
-
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -51,7 +54,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 LIBS   += -L$$PWD/lib/ -llibmysql
 LIBS   += -L$$PWD/lib/ -lJSONParseUtil
 
-LIBS   += $$PWD/lib/libQt5Mqtt.a
+LIBS   += -L$$PWD/lib/ -lQt5Mqtt
 
 
 

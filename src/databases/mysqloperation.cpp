@@ -39,6 +39,24 @@ static User& execSQLForOne(QString sql)
     return o_user;
 }
 
+MYSQLOperation::MYSQLOperation()
+{
+    db_user = QSqlDatabase::addDatabase("QMYSQL");
+
+    //设置 该链接的属性
+    db_user.setHostName(MYSQL_HOSTNAME);
+    db_user.setPort(3306);
+    db_user.setDatabaseName(MYSQL_DATABASENAME);
+    db_user.setUserName(MYSQL_USER);
+    db_user.setPassword(MYSQL_PASS);
+
+    //测试是否连接成功
+    if(! db_user.open() )
+    {
+        std::cout<<"connect failed"<<std::endl;
+    }
+}
+
 static void replaceSomeChar(QString& temp)
 {
     temp.replace(".000","");
@@ -76,24 +94,6 @@ QVector<UserHeartRate>& MYSQLOperation::getRateById(QString uid)
         o_user.append(temp);
     }
     return o_user;
-}
-
-MYSQLOperation::MYSQLOperation()
-{
-    db_user = QSqlDatabase::addDatabase("QMYSQL");
-
-    //设置 该链接的属性
-    db_user.setHostName(MYSQL_HOSTNAME);
-    db_user.setPort(3306);
-    db_user.setDatabaseName(MYSQL_DATABASENAME);
-    db_user.setUserName(MYSQL_USER);
-    db_user.setPassword(MYSQL_PASS);
-
-    //测试是否连接成功
-    if(! db_user.open() )
-    {
-        std::cout<<"connect failed"<<std::endl;
-    }
 }
 
 
@@ -135,5 +135,38 @@ bool MYSQLOperation::updateRateInfo(UserHeartRate &i_old, UserHeartRate &i_new)
     query.addBindValue(i_old.getRate());
     return query.exec();
 }
+
+
+bool MYSQLOperation::insertLedInfo(LedInfo &info)
+{
+    //m_mysql_oper
+    //qDebug()<<"insert info: "<<info.toString();
+    QSqlQuery query(this->db_user);
+    query.prepare("insert into led_info(id,time,status) VALUES (?,?,?)");
+    query.addBindValue(info.getId());   //在绑定要插入的值
+    query.addBindValue(info.getTime());
+    query.addBindValue(info.getStatus());
+    bool ret = query.exec();
+    /*
+    if(!ret)
+    {
+        qDebug()<<"insert failed info: "<<query.lastError().text();
+    }
+    */
+    return ret;
+}
+
+bool MYSQLOperation::updateLedInfo(LedInfo& old_info,LedInfo& new_info)
+{
+    QSqlQuery query(this->db_user);
+    query.prepare("update led_info set time=?,status=? where id=? and time = ? and status = ?");
+    query.addBindValue(new_info.getTime());
+    query.addBindValue(new_info.getStatus());
+    query.addBindValue(old_info.getId());
+    query.addBindValue(old_info.getTime());
+    query.addBindValue(old_info.getStatus());
+    return query.exec();
+}
+
 
 

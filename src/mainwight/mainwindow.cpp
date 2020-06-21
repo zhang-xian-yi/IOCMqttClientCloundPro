@@ -17,6 +17,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_client = new QMqttClient(this);
     m_recv_deal = new DealRecvJsonMessage(this->m_mysql_oper);
     m_line_chart = new LineChart(this->m_mysql_oper);
+    m_led_oper = new LedOper();
 
     main_ui->setupUi(this);
     setMaximumSize(600,450);
@@ -32,6 +33,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+    if(m_led_oper != nullptr)
+    {
+        delete m_led_oper;
+        m_led_oper = nullptr;
+    }
     if(m_line_chart != nullptr)
     {
         delete m_line_chart;
@@ -85,11 +91,17 @@ void MainWindow::initEnvConnect()
     connect(main_ui->btn_publish,SIGNAL(clicked()),this,SLOT(on_buttonPublish_clicked()));
     connect(main_ui->btn_showInfo,SIGNAL(clicked()) ,this,SLOT(on_buttonShowInfo_clicked()));
     connect(main_ui->btn_rate,SIGNAL(clicked()),this,SLOT(on_buttonGetRates_clicked()));
+    connect(main_ui->btn_led,SIGNAL(clicked()),this,SLOT(on_button_led_clicked()));
 
     connect(this->m_recv_deal,SIGNAL(signal_main_ui_msg(QString& )),this,SLOT(doLog(QString& )));
     connect(this->m_recv_deal,SIGNAL(signal_info_ui_msg(QString )),this->info_ui,SLOT(addUserIdInfo(QString )));
     connect(this->m_recv_deal,SIGNAL(signal_info_ui_setUID(QString )),this->info_ui,SLOT(setUserId(QString )));
-
+    connect(this->m_led_oper,&LedOper::signalLed,this,[this](LED_STATUS statu) {
+        QString str_status = QString::number(statu);
+        main_ui->lineEditMessage->setText(str_status);
+        on_buttonPublish_clicked();
+    });
+    connect(this->m_recv_deal,SIGNAL(signal_deal_LedInfo(LedInfo&)),this->m_led_oper,SLOT(slotDealLedInfo(LedInfo& )));
     updateLogStateChange();
 }
 
@@ -127,7 +139,13 @@ void MainWindow::on_buttonConnect_clicked()
     }
 }
 
-
+void MainWindow::on_button_led_clicked()
+{
+    if(m_led_oper != nullptr)
+    {
+        m_led_oper->show();
+    }
+}
 
 void MainWindow::updateLogStateChange()
 {
@@ -156,8 +174,12 @@ void MainWindow::setClientPort(quint16 p)
 
 void MainWindow::on_buttonPublish_clicked()
 {
-    if (m_client->publish(main_ui->lineEditTopic->text(), main_ui->lineEditMessage->text().toUtf8()) == -1)
+    QString topic = main_ui->lineEditTopic->text() +"_cmd";
+    QByteArray msg = main_ui->lineEditMessage->text().toUtf8();
+    if (m_client->publish(topic, msg) == -1)
+    {
         QMessageBox::critical(this, QLatin1String("Error"), QLatin1String("Could not publish message"));
+    }
 }
 
 void MainWindow::on_buttonSubscribe_clicked()
@@ -196,6 +218,10 @@ void MainWindow::doMessageRecvied(const QByteArray &message, const QMqttTopicNam
         m_recv_deal->dealRateInfo(message);
         //刷新一次具体解析信息
         m_line_chart->updateLineChart();
+    }
+    else if(topic.name() == "qtmqtt/topic_led")
+    {
+        m_recv_deal->dealLedInfo(message);
     }
 }
 

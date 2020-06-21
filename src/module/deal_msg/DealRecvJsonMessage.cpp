@@ -48,6 +48,8 @@ JSONParseUtil* DealRecvJsonMessage::getJsonParser()
     return m_json_parse;
 }
 
+
+
 void DealRecvJsonMessage::dealTemperatureInfo(const QByteArray &message)
 {
     QString uid = ToQString(m_json_parse->getValueByKey(message.toStdString(),"userId"));
@@ -97,3 +99,19 @@ void DealRecvJsonMessage::dealRateInfo(const QByteArray &message)
     }
 }
 
+
+void DealRecvJsonMessage::dealLedInfo(const QByteArray &message)
+{
+    std::string jsonstr = message.toStdString();
+    QString id = ToQString(m_json_parse->getValueByKey(jsonstr,"led_id"));
+    replaceNotMeanStr(id);
+
+    QString value_str =  ToQString(m_json_parse->getValueByKey(jsonstr,"value"));
+    replaceNotMeanStr(value_str);
+    int value_int = value_str.toUtf8().toInt();
+
+    static LedInfo info;
+    info.setId(id);
+    info.setValue(value_int);
+    emit signal_deal_LedInfo(info);
+}

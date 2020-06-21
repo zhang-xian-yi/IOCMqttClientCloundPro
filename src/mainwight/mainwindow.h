@@ -10,6 +10,7 @@
 #include "mysqloperation.h"
 #include "LineChart.h"
 #include "DealRecvJsonMessage.h"
+#include "ledoper.h"
 
 namespace Ui {
 class MainWindow;
@@ -37,6 +38,7 @@ private slots:
     void on_buttonSubscribe_clicked();
     void on_buttonShowInfo_clicked();
     void on_buttonGetRates_clicked();
+    void on_button_led_clicked();
 
     void updateLogStateChange();
     void brokerDisconnected();
@@ -54,6 +56,7 @@ private:
     MYSQLOperation& m_mysql_oper;
     LineChart*   m_line_chart;
     DealRecvJsonMessage*   m_recv_deal;
+    LedOper * m_led_oper;
 };
 
 #endif // MAINWINDOW_H

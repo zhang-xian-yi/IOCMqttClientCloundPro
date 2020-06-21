@@ -7,7 +7,7 @@
 #include <QSqlDatabase>
 #include "user.h"
 #include "UserHeartRate.h"
-
+#include "ledinfo.h"
 
 class MYSQLOperation
 {
@@ -26,6 +26,9 @@ public:
 
     bool insertRateInfo(UserHeartRate& rate);
     bool updateRateInfo(UserHeartRate& i_old,UserHeartRate& i_new);
+
+    bool insertLedInfo(LedInfo& info);
+    bool updateLedInfo(LedInfo& old_info,LedInfo& new_info);
 private:
     explicit MYSQLOperation();
     MYSQLOperation(const MYSQLOperation&)=delete;
